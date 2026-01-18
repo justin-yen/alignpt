@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useIntake } from "@/context/IntakeContext";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -16,12 +16,10 @@ import {
   VisitType,
   Insurance,
   DayOfWeek,
-  TimeOfDay,
   TimeWindow,
   VISIT_TYPE_LABELS,
   INSURANCE_LABELS,
   DAY_LABELS,
-  TIME_LABELS,
 } from "@/types";
 
 interface ZipResult {
@@ -34,7 +32,17 @@ interface ZipResult {
 const visitTypes: VisitType[] = ["in-person", "telehealth", "at-home"];
 const insuranceOptions: Insurance[] = ["aetna", "bcbs", "united", "self-pay"];
 const days: DayOfWeek[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
-const times: TimeOfDay[] = ["am", "pm", "eve"];
+// Timeline slots from 7:00 to 22:00 in 30-minute increments
+const START_HOUR = 7;
+const END_HOUR = 22;
+const SLOT_MINUTES = 30;
+const totalSlots = ((END_HOUR - START_HOUR) * 60) / SLOT_MINUTES;
+const slots = Array.from({ length: totalSlots }, (_, i) => {
+  const minutes = START_HOUR * 60 + i * SLOT_MINUTES;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+});
 
 export default function Step4Logistics() {
   const {
@@ -129,9 +137,72 @@ export default function Step4Logistics() {
     setZipResults([]);
   };
 
-  const isAvailabilitySelected = (day: DayOfWeek, time: TimeOfDay) => {
+  const isAvailabilitySelected = (day: DayOfWeek, time: string) => {
     return state.availability.some((w) => w.day === day && w.time === time);
   };
+
+  // Drag state for per-day timeline selection
+  const [preview, setPreview] = useState<{
+    day: DayOfWeek;
+    startSlot: number;
+    endSlot: number;
+  } | null>(null);
+  const dragInfo = useRef<{
+    isDragging: boolean;
+    day: DayOfWeek | null;
+    startSlot: number | null;
+    mode: "select" | "deselect" | null;
+  }>({ isDragging: false, day: null, startSlot: null, mode: null });
+
+  const calcSlotFromEvent = (e: MouseEvent | React.MouseEvent, el: HTMLElement) => {
+    const rect = el.getBoundingClientRect();
+    const y = (e as MouseEvent).clientY - rect.top;
+    const pct = Math.max(0, Math.min(1, y / rect.height));
+    return Math.floor(pct * totalSlots);
+  };
+
+  const handleTimelineMouseDown = (day: DayOfWeek) => (e: React.MouseEvent) => {
+    const el = e.currentTarget as HTMLElement;
+    const slot = calcSlotFromEvent(e, el);
+    const time = slots[slot];
+    const selected = isAvailabilitySelected(day, time);
+    dragInfo.current = { isDragging: true, day, startSlot: slot, mode: selected ? "deselect" : "select" };
+    setPreview({ day, startSlot: slot, endSlot: slot });
+    e.preventDefault();
+  };
+
+  const handleTimelineMouseMove = (day: DayOfWeek) => (e: React.MouseEvent) => {
+    if (!dragInfo.current.isDragging || dragInfo.current.day !== day) return;
+    const el = e.currentTarget as HTMLElement;
+    const slot = calcSlotFromEvent(e, el);
+    if (dragInfo.current.startSlot == null) return;
+    setPreview({ day, startSlot: dragInfo.current.startSlot, endSlot: slot });
+  };
+
+  const finalizePreview = (day: DayOfWeek) => {
+    if (!preview || preview.day !== day) return;
+    const s = Math.min(preview.startSlot, preview.endSlot);
+    const e = Math.max(preview.startSlot, preview.endSlot);
+    const mode = dragInfo.current.mode;
+    for (let i = s; i <= e; i++) {
+      const time = slots[i];
+      const selected = isAvailabilitySelected(day, time);
+      if (mode === "select" && !selected) toggleAvailability({ day, time });
+      if (mode === "deselect" && selected) toggleAvailability({ day, time });
+    }
+    dragInfo.current = { isDragging: false, day: null, startSlot: null, mode: null };
+    setPreview(null);
+  };
+
+  useEffect(() => {
+    const onMouseUp = () => {
+      if (dragInfo.current.isDragging && dragInfo.current.day) {
+        finalizePreview(dragInfo.current.day);
+      }
+    };
+    window.addEventListener("mouseup", onMouseUp);
+    return () => window.removeEventListener("mouseup", onMouseUp);
+  }, [preview]);
 
   return (
     <div>
@@ -307,63 +378,85 @@ export default function Step4Logistics() {
           helps with matching)
         </p>
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr>
-                <th className="p-2 text-sm font-medium text-slate-600"></th>
-                {days.map((day) => (
-                  <th
-                    key={day}
-                    className="p-2 text-sm font-medium text-slate-600 text-center"
-                  >
-                    {DAY_LABELS[day]}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {times.map((time) => (
-                <tr key={time}>
-                  <td className="p-2 text-sm font-medium text-slate-600">
-                    {TIME_LABELS[time]}
-                  </td>
-                  {days.map((day) => {
-                    const isSelected = isAvailabilitySelected(day, time);
-                    const window: TimeWindow = { day, time };
+          <div className="grid grid-cols-7 gap-4">
+            {days.map((day) => (
+              <div key={`day-${day}`}>
+                <div className="text-xs text-center text-slate-600 font-medium mb-2">
+                  {DAY_LABELS[day]}
+                </div>
+
+                <div
+                  className="relative h-72 bg-white border border-slate-200 rounded-md select-none"
+                  onMouseDown={handleTimelineMouseDown(day)}
+                  onMouseMove={handleTimelineMouseMove(day)}
+                >
+                  {/* hour ticks (horizontal lines) */}
+                  {Array.from({ length: END_HOUR - START_HOUR + 1 }, (_, i) => {
+                    const hour = START_HOUR + i;
+                    const top = ((i * 60) / ((END_HOUR - START_HOUR) * 60)) * 100;
                     return (
-                      <td key={`${day}-${time}`} className="p-1 text-center">
-                        <button
-                          type="button"
-                          onClick={() => toggleAvailability(window)}
-                          className={`w-8 h-8 rounded-md border transition-colors ${
-                            isSelected
-                              ? "bg-primary text-white border-primary"
-                              : "border-slate-200 hover:bg-slate-100"
-                          }`}
-                        >
-                          {isSelected && (
-                            <svg
-                              className="w-4 h-4 mx-auto"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M5 13l4 4L19 7"
-                              />
-                            </svg>
-                          )}
-                        </button>
-                      </td>
+                      <div
+                        key={`tick-${day}-${hour}`}
+                        className="absolute left-0 right-0 h-px bg-slate-100"
+                        style={{ top: `${top}%` }}
+                      />
                     );
                   })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+
+                  {/* preview overlay */}
+                  {preview && preview.day === day && (
+                    (() => {
+                      const s = Math.min(preview.startSlot, preview.endSlot);
+                      const e = Math.max(preview.startSlot, preview.endSlot);
+                      const top = (s / totalSlots) * 100;
+                      const height = ((e - s + 1) / totalSlots) * 100;
+                      return (
+                        <div
+                          className="absolute left-0 right-0 bg-primary/30 pointer-events-none rounded-md"
+                          style={{ top: `${top}%`, height: `${height}%` }}
+                        />
+                      );
+                    })()
+                  )}
+
+                  {/* existing selections overlay (merged contiguous slots into single rounded ranges) */}
+                  {(() => {
+                    const ranges: { start: number; end: number }[] = [];
+                    let i = 0;
+                    while (i < totalSlots) {
+                      if (isAvailabilitySelected(day, slots[i])) {
+                        let start = i;
+                        let j = i;
+                        while (j + 1 < totalSlots && isAvailabilitySelected(day, slots[j + 1])) {
+                          j++;
+                        }
+                        ranges.push({ start, end: j });
+                        i = j + 1;
+                      } else {
+                        i++;
+                      }
+                    }
+
+                    return ranges.map((r, idx) => {
+                      const top = (r.start / totalSlots) * 100;
+                      const height = ((r.end - r.start + 1) / totalSlots) * 100;
+                      return (
+                        <div
+                          key={`sel-range-${day}-${idx}`}
+                          className="absolute left-1 right-1 bg-primary rounded-md pointer-events-none"
+                          style={{ top: `${top}%`, height: `${height}%` }}
+                        />
+                      );
+                    });
+                  })()}
+                </div>
+
+                <div className="mt-2 text-xs text-slate-500 text-center">
+                  {START_HOUR}:00 — {END_HOUR}:00
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
         {state.availability.length > 0 && (
           <p className="mt-3 text-sm text-slate-500">

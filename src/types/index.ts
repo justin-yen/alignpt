@@ -65,11 +65,10 @@ export type VisitType = "in-person" | "telehealth" | "at-home";
 export type Insurance = "aetna" | "bcbs" | "united" | "self-pay";
 
 export type DayOfWeek = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
-export type TimeOfDay = "am" | "pm" | "eve";
 
 export interface TimeWindow {
   day: DayOfWeek;
-  time: TimeOfDay;
+  time: string;
 }
 
 export interface PatientInput {
