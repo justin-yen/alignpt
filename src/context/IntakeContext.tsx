@@ -6,8 +6,8 @@ import {
   InjurySide,
   InjuryRegion,
   Goal,
-  CoachingStyle,
-  SessionStyle,
+  StylePreferences,
+  DEFAULT_STYLE_PREFERENCES,
   VisitType,
   Insurance,
   TimeWindow,
@@ -20,8 +20,7 @@ interface IntakeState {
   injuryRegion: InjuryRegion | null;
   injuryContext: string;
   goal: Goal | null;
-  coachingStyles: CoachingStyle[];
-  sessionStyles: SessionStyle[];
+  stylePreferences: StylePreferences;
   location: string;
   visitTypes: VisitType[];
   insurance: Insurance | null;
@@ -35,8 +34,7 @@ interface IntakeContextType {
   setInjuryRegion: (region: InjuryRegion) => void;
   setInjuryContext: (context: string) => void;
   setGoal: (goal: Goal) => void;
-  toggleCoachingStyle: (style: CoachingStyle) => void;
-  toggleSessionStyle: (style: SessionStyle) => void;
+  setStylePreference: (key: keyof StylePreferences, value: number) => void;
   setLocation: (location: string) => void;
   toggleVisitType: (type: VisitType) => void;
   setInsurance: (insurance: Insurance) => void;
@@ -52,8 +50,7 @@ const initialState: IntakeState = {
   injuryRegion: null,
   injuryContext: "",
   goal: null,
-  coachingStyles: [],
-  sessionStyles: [],
+  stylePreferences: { ...DEFAULT_STYLE_PREFERENCES },
   location: "",
   visitTypes: [],
   insurance: null,
@@ -91,21 +88,13 @@ export function IntakeProvider({ children }: { children: ReactNode }) {
     setState((prev) => ({ ...prev, goal }));
   };
 
-  const toggleCoachingStyle = (style: CoachingStyle) => {
+  const setStylePreference = (key: keyof StylePreferences, value: number) => {
     setState((prev) => ({
       ...prev,
-      coachingStyles: prev.coachingStyles.includes(style)
-        ? prev.coachingStyles.filter((s) => s !== style)
-        : [...prev.coachingStyles, style],
-    }));
-  };
-
-  const toggleSessionStyle = (style: SessionStyle) => {
-    setState((prev) => ({
-      ...prev,
-      sessionStyles: prev.sessionStyles.includes(style)
-        ? prev.sessionStyles.filter((s) => s !== style)
-        : [...prev.sessionStyles, style],
+      stylePreferences: {
+        ...prev.stylePreferences,
+        [key]: value,
+      },
     }));
   };
 
@@ -165,8 +154,7 @@ export function IntakeProvider({ children }: { children: ReactNode }) {
       injuryRegion: state.injuryRegion,
       injuryContext: state.injuryContext,
       goal: state.goal,
-      coachingStyles: state.coachingStyles,
-      sessionStyles: state.sessionStyles,
+      stylePreferences: state.stylePreferences,
       location: state.location,
       visitTypes: state.visitTypes,
       insurance: state.insurance,
@@ -210,8 +198,7 @@ export function IntakeProvider({ children }: { children: ReactNode }) {
         setInjuryRegion,
         setInjuryContext,
         setGoal,
-        toggleCoachingStyle,
-        toggleSessionStyle,
+        setStylePreference,
         setLocation,
         toggleVisitType,
         setInsurance,

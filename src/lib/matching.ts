@@ -7,6 +7,7 @@ import {
   MatchingWeights,
   DEFAULT_WEIGHTS,
   TimeWindow,
+  StylePreferences,
 } from "@/types";
 
 function calculateInjuryScore(
@@ -68,34 +69,42 @@ function calculateGoalScore(
 }
 
 function calculateStyleScore(
-  patientCoachingStyles: string[],
-  patientSessionStyles: string[],
-  ptCoachingStyle: string,
-  ptSessionStyle: string,
+  patientPrefs: StylePreferences,
+  ptScores: StylePreferences,
   maxScore: number
 ): number {
-  let score = 0;
-  const coachingWeight = 0.5;
-  const sessionWeight = 0.5;
+  // Each preference dimension contributes equally to the total style score
+  const dimensions: (keyof StylePreferences)[] = [
+    "communicationStyle",
+    "motivationLevel",
+    "empathyLevel",
+    "treatmentApproach",
+  ];
 
-  // Coaching style match
-  if (patientCoachingStyles.includes(ptCoachingStyle)) {
-    score += maxScore * coachingWeight;
-  } else if (patientCoachingStyles.length === 0) {
-    score += maxScore * coachingWeight * 0.5;
+  let totalScore = 0;
+  const perDimensionMax = maxScore / dimensions.length;
+
+  for (const dim of dimensions) {
+    const patientValue = patientPrefs[dim];
+    const ptValue = ptScores[dim];
+
+    // If patient has no preference (value = 3), give full score for this dimension
+    if (patientValue === 3) {
+      totalScore += perDimensionMax;
+      continue;
+    }
+
+    // Calculate how close the PT's value is to the patient's preference
+    // Max difference is 4 (e.g., patient=1, PT=5)
+    const difference = Math.abs(patientValue - ptValue);
+
+    // Score decreases linearly with difference
+    // difference 0 = 100%, difference 1 = 75%, difference 2 = 50%, difference 3 = 25%, difference 4 = 0%
+    const matchRatio = 1 - (difference / 4);
+    totalScore += perDimensionMax * matchRatio;
   }
 
-  // Session style match
-  if (patientSessionStyles.includes(ptSessionStyle)) {
-    score += maxScore * sessionWeight;
-  } else if (patientSessionStyles.length === 0) {
-    score += maxScore * sessionWeight * 0.5;
-  } else if (ptSessionStyle === "hybrid") {
-    // Hybrid is a partial match for any preference
-    score += maxScore * sessionWeight * 0.7;
-  }
-
-  return score;
+  return totalScore;
 }
 
 function calculateLogisticsScore(
@@ -166,6 +175,43 @@ function calculateAvailabilityScore(
   return maxScore * matchRatio;
 }
 
+// Helper to describe style preferences
+const styleDescriptions: Record<keyof StylePreferences, { low: string; high: string; name: string }> = {
+  communicationStyle: { low: "technical", high: "simple", name: "communication" },
+  motivationLevel: { low: "calm", high: "high-energy", name: "energy level" },
+  empathyLevel: { low: "direct", high: "empathetic", name: "interaction style" },
+  treatmentApproach: { low: "hands-on", high: "exercise-based", name: "treatment approach" },
+};
+
+function getStyleMatchDescription(
+  patientPrefs: StylePreferences,
+  ptScores: StylePreferences
+): { matches: string[]; mismatches: string[] } {
+  const matches: string[] = [];
+  const mismatches: string[] = [];
+
+  for (const [key, desc] of Object.entries(styleDescriptions)) {
+    const dim = key as keyof StylePreferences;
+    const patientValue = patientPrefs[dim];
+    const ptValue = ptScores[dim];
+
+    // Skip if patient has no preference
+    if (patientValue === 3) continue;
+
+    const difference = Math.abs(patientValue - ptValue);
+    const patientPrefLabel = patientValue < 3 ? desc.low : desc.high;
+    const ptLabel = ptValue <= 2 ? desc.low : ptValue >= 4 ? desc.high : "balanced";
+
+    if (difference <= 1) {
+      matches.push(`${patientPrefLabel} ${desc.name}`);
+    } else if (difference >= 3) {
+      mismatches.push(`prefers ${ptLabel} ${desc.name} vs your ${patientPrefLabel} preference`);
+    }
+  }
+
+  return { matches, mismatches };
+}
+
 function generateReasons(
   patient: PatientInput,
   pt: PTProfile,
@@ -192,17 +238,16 @@ function generateReasons(
     });
   }
 
-  if (patient.coachingStyles.includes(pt.coachingStyle)) {
-    reasons.push({
-      type: "positive",
-      text: `Matches your preferred ${pt.coachingStyle.replace("-", "/")} coaching style`,
-    });
-  }
+  // Style match reasons
+  const { matches: styleMatches, mismatches: styleMismatches } = getStyleMatchDescription(
+    patient.stylePreferences,
+    pt.styleScores
+  );
 
-  if (patient.sessionStyles.includes(pt.sessionStyle)) {
+  if (styleMatches.length > 0) {
     reasons.push({
       type: "positive",
-      text: `Offers ${pt.sessionStyle.replace("-", "/")} sessions as requested`,
+      text: `Matches your ${styleMatches.slice(0, 2).join(" and ")} preferences`,
     });
   }
 
@@ -221,10 +266,10 @@ function generateReasons(
     });
   }
 
-  if (!patient.coachingStyles.includes(pt.coachingStyle) && patient.coachingStyles.length > 0) {
+  if (styleMismatches.length > 0) {
     reasons.push({
       type: "tradeoff",
-      text: `Coaching style (${pt.coachingStyle.replace("-", "/")}) differs from your preference`,
+      text: `Style difference: ${styleMismatches[0]}`,
     });
   }
 
@@ -264,10 +309,8 @@ export function matchPTs(
     const goalFit = calculateGoalScore(patient.goal, pt.goalExpertise, weights.goal);
 
     const styleFit = calculateStyleScore(
-      patient.coachingStyles,
-      patient.sessionStyles,
-      pt.coachingStyle,
-      pt.sessionStyle,
+      patient.stylePreferences,
+      pt.styleScores,
       weights.style
     );
 

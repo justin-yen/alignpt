@@ -40,6 +40,26 @@ export type CoachingStyle =
 
 export type SessionStyle = "hands-on-manual" | "exercise-focused" | "hybrid";
 
+// Style preferences as sliding scales (1-5)
+// Each scale represents a spectrum between two poles
+export interface StylePreferences {
+  // 1 = Technical/Detailed explanations, 5 = Simple/Intuitive guidance
+  communicationStyle: number;
+  // 1 = Calm/Measured pace, 5 = High-energy/Motivational
+  motivationLevel: number;
+  // 1 = Direct/Efficient, 5 = Empathetic/Patient-centered
+  empathyLevel: number;
+  // 1 = Hands-on/Manual therapy focus, 5 = Exercise/Movement focus
+  treatmentApproach: number;
+}
+
+export const DEFAULT_STYLE_PREFERENCES: StylePreferences = {
+  communicationStyle: 3,
+  motivationLevel: 3,
+  empathyLevel: 3,
+  treatmentApproach: 3,
+};
+
 export type VisitType = "in-person" | "telehealth" | "at-home";
 
 export type Insurance = "aetna" | "bcbs" | "united" | "self-pay";
@@ -58,8 +78,7 @@ export interface PatientInput {
   injuryRegion: InjuryRegion;
   injuryContext: string;
   goal: Goal;
-  coachingStyles: CoachingStyle[];
-  sessionStyles: SessionStyle[];
+  stylePreferences: StylePreferences;
   location: string;
   visitTypes: VisitType[];
   insurance: Insurance;
@@ -82,6 +101,7 @@ export interface PTProfile {
   goalExpertise: Goal[];
   coachingStyle: CoachingStyle;
   sessionStyle: SessionStyle;
+  styleScores: StylePreferences;
   visitTypes: VisitType[];
   insuranceAccepted: Insurance[];
   availability: TimeWindow[];

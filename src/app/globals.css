@@ -4,26 +4,43 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
+    /* Calm, healthcare-focused color palette */
+    --background: 180 20% 99%;
+    --foreground: 200 15% 25%;
+
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 200 15% 30%;
+
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 199 89% 35%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222 47% 11%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 199 89% 35%;
-    --radius: 0.5rem;
+    --popover-foreground: 200 15% 30%;
+
+    /* Gentle teal - calming and trustworthy */
+    --primary: 174 42% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Soft warm gray */
+    --secondary: 180 10% 96%;
+    --secondary-foreground: 200 15% 30%;
+
+    /* Muted tones for less visual noise */
+    --muted: 180 12% 95%;
+    --muted-foreground: 200 10% 50%;
+
+    /* Soft sage accent */
+    --accent: 160 25% 94%;
+    --accent-foreground: 200 15% 30%;
+
+    /* Softer destructive - less alarming */
+    --destructive: 0 60% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Softer borders */
+    --border: 180 15% 90%;
+    --input: 180 15% 90%;
+    --ring: 174 42% 45%;
+
+    /* Larger radius for friendlier feel */
+    --radius: 0.75rem;
   }
 }
 
@@ -32,6 +49,19 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv11", "ss01";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Friendlier typography */
+  h1, h2, h3, h4, h5, h6 {
+    @apply tracking-tight;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    @apply leading-relaxed;
   }
 }

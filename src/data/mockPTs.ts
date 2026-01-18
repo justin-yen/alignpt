@@ -22,6 +22,7 @@ export const mockPTs: PTProfile[] = [
     goalExpertise: ["return-to-sport", "strengthen", "post-op-rehab"],
     coachingStyle: "technical-explanatory",
     sessionStyle: "hybrid",
+    styleScores: { communicationStyle: 1, motivationLevel: 3, empathyLevel: 2, treatmentApproach: 3 },
     visitTypes: ["in-person", "telehealth"],
     insuranceAccepted: ["aetna", "bcbs", "united"],
     availability: [
@@ -61,6 +62,7 @@ export const mockPTs: PTProfile[] = [
     goalExpertise: ["reduce-pain", "posture-mobility"],
     coachingStyle: "empathetic-listener",
     sessionStyle: "hands-on-manual",
+    styleScores: { communicationStyle: 4, motivationLevel: 2, empathyLevel: 5, treatmentApproach: 1 },
     visitTypes: ["in-person"],
     insuranceAccepted: ["bcbs", "united", "self-pay"],
     availability: [
@@ -100,6 +102,7 @@ export const mockPTs: PTProfile[] = [
     goalExpertise: ["return-to-sport", "strengthen"],
     coachingStyle: "motivational-coach",
     sessionStyle: "exercise-focused",
+    styleScores: { communicationStyle: 4, motivationLevel: 5, empathyLevel: 3, treatmentApproach: 5 },
     visitTypes: ["in-person", "at-home"],
     insuranceAccepted: ["aetna", "bcbs"],
     availability: [
@@ -139,6 +142,7 @@ export const mockPTs: PTProfile[] = [
     goalExpertise: ["post-op-rehab", "strengthen", "return-to-sport"],
     coachingStyle: "technical-explanatory",
     sessionStyle: "exercise-focused",
+    styleScores: { communicationStyle: 1, motivationLevel: 2, empathyLevel: 2, treatmentApproach: 5 },
     visitTypes: ["in-person", "telehealth"],
     insuranceAccepted: ["aetna", "bcbs", "united", "self-pay"],
     availability: [
@@ -178,6 +182,7 @@ export const mockPTs: PTProfile[] = [
     goalExpertise: ["reduce-pain", "posture-mobility"],
     coachingStyle: "empathetic-listener",
     sessionStyle: "hands-on-manual",
+    styleScores: { communicationStyle: 5, motivationLevel: 1, empathyLevel: 5, treatmentApproach: 2 },
     visitTypes: ["in-person", "telehealth", "at-home"],
     insuranceAccepted: ["bcbs", "self-pay"],
     availability: [
@@ -217,6 +222,7 @@ export const mockPTs: PTProfile[] = [
     goalExpertise: ["return-to-sport", "strengthen"],
     coachingStyle: "motivational-coach",
     sessionStyle: "exercise-focused",
+    styleScores: { communicationStyle: 3, motivationLevel: 5, empathyLevel: 3, treatmentApproach: 5 },
     visitTypes: ["in-person", "telehealth"],
     insuranceAccepted: ["aetna", "united"],
     availability: [
@@ -257,6 +263,7 @@ export const mockPTs: PTProfile[] = [
     goalExpertise: ["reduce-pain", "posture-mobility"],
     coachingStyle: "technical-explanatory",
     sessionStyle: "exercise-focused",
+    styleScores: { communicationStyle: 2, motivationLevel: 3, empathyLevel: 3, treatmentApproach: 4 },
     visitTypes: ["in-person", "telehealth"],
     insuranceAccepted: ["bcbs", "united", "self-pay"],
     availability: [
@@ -297,6 +304,7 @@ export const mockPTs: PTProfile[] = [
     goalExpertise: ["return-to-sport", "strengthen"],
     coachingStyle: "motivational-coach",
     sessionStyle: "hybrid",
+    styleScores: { communicationStyle: 3, motivationLevel: 4, empathyLevel: 3, treatmentApproach: 3 },
     visitTypes: ["in-person", "at-home"],
     insuranceAccepted: ["aetna", "bcbs", "united"],
     availability: [
@@ -337,6 +345,7 @@ export const mockPTs: PTProfile[] = [
     goalExpertise: ["post-op-rehab", "reduce-pain", "return-to-sport"],
     coachingStyle: "technical-explanatory",
     sessionStyle: "hands-on-manual",
+    styleScores: { communicationStyle: 1, motivationLevel: 2, empathyLevel: 3, treatmentApproach: 2 },
     visitTypes: ["in-person"],
     insuranceAccepted: ["aetna", "bcbs", "united", "self-pay"],
     availability: [
@@ -377,6 +386,7 @@ export const mockPTs: PTProfile[] = [
     goalExpertise: ["strengthen", "reduce-pain", "posture-mobility"],
     coachingStyle: "empathetic-listener",
     sessionStyle: "exercise-focused",
+    styleScores: { communicationStyle: 4, motivationLevel: 2, empathyLevel: 5, treatmentApproach: 4 },
     visitTypes: ["at-home", "telehealth"],
     insuranceAccepted: ["bcbs", "united", "self-pay"],
     availability: [
@@ -420,6 +430,7 @@ export const mockPTs: PTProfile[] = [
     goalExpertise: ["posture-mobility", "strengthen", "reduce-pain"],
     coachingStyle: "empathetic-listener",
     sessionStyle: "hybrid",
+    styleScores: { communicationStyle: 4, motivationLevel: 2, empathyLevel: 4, treatmentApproach: 3 },
     visitTypes: ["in-person", "telehealth"],
     insuranceAccepted: ["aetna", "self-pay"],
     availability: [
@@ -459,6 +470,7 @@ export const mockPTs: PTProfile[] = [
     goalExpertise: ["return-to-sport", "reduce-pain", "strengthen"],
     coachingStyle: "technical-explanatory",
     sessionStyle: "exercise-focused",
+    styleScores: { communicationStyle: 2, motivationLevel: 3, empathyLevel: 2, treatmentApproach: 4 },
     visitTypes: ["in-person"],
     insuranceAccepted: ["aetna", "bcbs", "self-pay"],
     availability: [
@@ -499,6 +511,7 @@ export const mockPTs: PTProfile[] = [
     goalExpertise: ["return-to-sport", "strengthen"],
     coachingStyle: "motivational-coach",
     sessionStyle: "exercise-focused",
+    styleScores: { communicationStyle: 3, motivationLevel: 5, empathyLevel: 3, treatmentApproach: 5 },
     visitTypes: ["in-person", "telehealth"],
     insuranceAccepted: ["united", "self-pay"],
     availability: [
@@ -539,6 +552,7 @@ export const mockPTs: PTProfile[] = [
     goalExpertise: ["reduce-pain", "posture-mobility"],
     coachingStyle: "empathetic-listener",
     sessionStyle: "hands-on-manual",
+    styleScores: { communicationStyle: 3, motivationLevel: 2, empathyLevel: 5, treatmentApproach: 1 },
     visitTypes: ["in-person"],
     insuranceAccepted: ["bcbs", "self-pay"],
     availability: [
@@ -579,6 +593,7 @@ export const mockPTs: PTProfile[] = [
     goalExpertise: ["return-to-sport", "strengthen", "reduce-pain"],
     coachingStyle: "motivational-coach",
     sessionStyle: "exercise-focused",
+    styleScores: { communicationStyle: 5, motivationLevel: 4, empathyLevel: 4, treatmentApproach: 4 },
     visitTypes: ["in-person", "at-home"],
     insuranceAccepted: ["aetna", "bcbs", "united"],
     availability: [
@@ -618,6 +633,7 @@ export const mockPTs: PTProfile[] = [
     goalExpertise: ["post-op-rehab", "strengthen", "return-to-sport"],
     coachingStyle: "technical-explanatory",
     sessionStyle: "hybrid",
+    styleScores: { communicationStyle: 2, motivationLevel: 3, empathyLevel: 2, treatmentApproach: 3 },
     visitTypes: ["in-person", "telehealth"],
     insuranceAccepted: ["aetna", "bcbs", "united", "self-pay"],
     availability: [
@@ -659,6 +675,7 @@ export const mockPTs: PTProfile[] = [
     goalExpertise: ["reduce-pain", "strengthen", "posture-mobility"],
     coachingStyle: "motivational-coach",
     sessionStyle: "exercise-focused",
+    styleScores: { communicationStyle: 4, motivationLevel: 4, empathyLevel: 3, treatmentApproach: 5 },
     visitTypes: ["telehealth"],
     insuranceAccepted: ["aetna", "bcbs", "united", "self-pay"],
     availability: [
@@ -704,6 +721,7 @@ export const mockPTs: PTProfile[] = [
     goalExpertise: ["return-to-sport", "strengthen", "posture-mobility"],
     coachingStyle: "technical-explanatory",
     sessionStyle: "exercise-focused",
+    styleScores: { communicationStyle: 1, motivationLevel: 3, empathyLevel: 2, treatmentApproach: 5 },
     visitTypes: ["in-person"],
     insuranceAccepted: ["self-pay"],
     availability: [

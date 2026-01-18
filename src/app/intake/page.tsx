@@ -10,6 +10,7 @@ import Step1Injury from "@/components/intake/Step1Injury";
 import Step2Goal from "@/components/intake/Step2Goal";
 import Step3Preferences from "@/components/intake/Step3Preferences";
 import Step4Logistics from "@/components/intake/Step4Logistics";
+import PreferencesSidebar from "@/components/intake/PreferencesSidebar";
 import { ChevronLeft } from "lucide-react";
 
 const TOTAL_STEPS = 4;
@@ -61,10 +62,11 @@ export default function IntakePage() {
   };
 
   const progressValue = (currentStep / TOTAL_STEPS) * 100;
+  const isPreferencesStep = currentStep === 3;
 
   return (
     <main className="min-h-screen py-8 px-4">
-      <div className="max-w-2xl mx-auto">
+      <div className={`mx-auto ${isPreferencesStep ? "max-w-4xl" : "max-w-2xl"}`}>
         {/* Header */}
         <div className="mb-8">
           <Link
@@ -88,23 +90,31 @@ export default function IntakePage() {
           <Progress value={progressValue} className="h-2" />
         </div>
 
-        {/* Step Content */}
-        <div className="bg-white rounded-lg border border-slate-200 p-6 mb-6">
-          {renderStep()}
-        </div>
+        {/* Step Content with optional sidebar */}
+        <div className={`flex gap-6 ${isPreferencesStep ? "" : "justify-center"}`}>
+          <div className={`${isPreferencesStep ? "flex-1" : "w-full max-w-2xl"}`}>
+            {/* Step Content */}
+            <div className="bg-white rounded-2xl border border-border/60 p-8 mb-6 shadow-soft">
+              {renderStep()}
+            </div>
 
-        {/* Navigation */}
-        <div className="flex justify-between">
-          <Button
-            variant="outline"
-            onClick={handleBack}
-            disabled={currentStep === 1}
-          >
-            Back
-          </Button>
-          <Button onClick={handleNext} disabled={!isStepValid(currentStep)}>
-            {currentStep === TOTAL_STEPS ? "Find My Matches" : "Continue"}
-          </Button>
+            {/* Navigation */}
+            <div className="flex justify-between">
+              <Button
+                variant="outline"
+                onClick={handleBack}
+                disabled={currentStep === 1}
+              >
+                Back
+              </Button>
+              <Button onClick={handleNext} disabled={!isStepValid(currentStep)}>
+                {currentStep === TOTAL_STEPS ? "Find My Matches" : "Continue"}
+              </Button>
+            </div>
+          </div>
+
+          {/* Sidebar for preferences step */}
+          {isPreferencesStep && <PreferencesSidebar />}
         </div>
       </div>
     </main>

@@ -45,9 +45,21 @@ const config: Config = {
         },
       },
       borderRadius: {
+        "2xl": "calc(var(--radius) + 4px)",
+        xl: "calc(var(--radius) + 2px)",
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      boxShadow: {
+        "soft": "0 2px 8px -2px rgba(0, 0, 0, 0.05), 0 4px 16px -4px rgba(0, 0, 0, 0.05)",
+        "soft-lg": "0 4px 12px -4px rgba(0, 0, 0, 0.06), 0 8px 24px -8px rgba(0, 0, 0, 0.06)",
+      },
+      transitionDuration: {
+        "250": "250ms",
+      },
+      transitionTimingFunction: {
+        "gentle": "cubic-bezier(0.4, 0, 0.2, 1)",
       },
     },
   },
