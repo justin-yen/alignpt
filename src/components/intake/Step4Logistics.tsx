@@ -32,6 +32,16 @@ interface ZipResult {
 const visitTypes: VisitType[] = ["in-person", "telehealth", "at-home"];
 const insuranceOptions: Insurance[] = ["aetna", "bcbs", "united", "self-pay"];
 const days: DayOfWeek[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+
+const FULL_DAY_NAMES: Record<DayOfWeek, string> = {
+  mon: "Monday",
+  tue: "Tuesday",
+  wed: "Wednesday",
+  thu: "Thursday",
+  fri: "Friday",
+  sat: "Saturday",
+  sun: "Sunday",
+};
 // Timeline slots from 7:00 to 22:00 in 30-minute increments
 const START_HOUR = 7;
 const END_HOUR = 22;
@@ -43,6 +53,74 @@ const slots = Array.from({ length: totalSlots }, (_, i) => {
   const m = minutes % 60;
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 });
+
+// Format time string (HH:MM) to 12-hour format (e.g., "10am", "1pm", "12pm")
+const formatTime12h = (time: string): string => {
+  const [h, m] = time.split(":").map(Number);
+  const hour12 = h === 12 ? 12 : h > 12 ? h - 12 : h;
+  const ampm = h >= 12 ? "pm" : "am";
+  if (m === 0) {
+    return `${hour12}${ampm}`;
+  }
+  return `${hour12}:${String(m).padStart(2, "0")}${ampm}`;
+};
+
+// Get the end time for a slot (add 30 minutes)
+const getSlotEndTime = (time: string): string => {
+  const [h, m] = time.split(":").map(Number);
+  const totalMinutes = h * 60 + m + SLOT_MINUTES;
+  const newH = Math.floor(totalMinutes / 60);
+  const newM = totalMinutes % 60;
+  return `${String(newH).padStart(2, "0")}:${String(newM).padStart(2, "0")}`;
+};
+
+// Group availability by day and merge contiguous slots into ranges
+const groupAvailabilityByDay = (
+  availability: TimeWindow[]
+): { day: DayOfWeek; ranges: string[] }[] => {
+  // Group by day
+  const byDay: Record<DayOfWeek, string[]> = {
+    mon: [], tue: [], wed: [], thu: [], fri: [], sat: [], sun: [],
+  };
+
+  availability.forEach((tw) => {
+    byDay[tw.day].push(tw.time);
+  });
+
+  const result: { day: DayOfWeek; ranges: string[] }[] = [];
+
+  days.forEach((day) => {
+    const times = byDay[day];
+    if (times.length === 0) return;
+
+    // Sort times
+    times.sort();
+
+    // Merge contiguous slots into ranges
+    const ranges: string[] = [];
+    let rangeStart = times[0];
+    let rangeEnd = times[0];
+
+    for (let i = 1; i < times.length; i++) {
+      const expectedNext = getSlotEndTime(rangeEnd);
+      if (times[i] === expectedNext) {
+        // Contiguous, extend range
+        rangeEnd = times[i];
+      } else {
+        // Gap found, save current range and start new one
+        ranges.push(`${formatTime12h(rangeStart)}-${formatTime12h(getSlotEndTime(rangeEnd))}`);
+        rangeStart = times[i];
+        rangeEnd = times[i];
+      }
+    }
+    // Save last range
+    ranges.push(`${formatTime12h(rangeStart)}-${formatTime12h(getSlotEndTime(rangeEnd))}`);
+
+    result.push({ day, ranges });
+  });
+
+  return result;
+};
 
 export default function Step4Logistics() {
   const {
@@ -377,8 +455,38 @@ export default function Step4Logistics() {
           Select 2-3 time windows when you&apos;re typically available (optional but
           helps with matching)
         </p>
-        <div className="overflow-x-auto">
-          <div className="grid grid-cols-7 gap-4">
+        <div className="flex gap-6">
+          {/* Grid container */}
+          <div className="overflow-x-auto flex-1">
+          <div className="flex gap-2">
+            {/* Hour labels column */}
+            <div className="flex-shrink-0 w-10">
+              {/* Empty header space to align with day labels */}
+              <div className="text-xs text-center text-slate-600 font-medium mb-2 invisible">
+                &nbsp;
+              </div>
+              {/* Hour labels container */}
+              <div className="relative h-72">
+                {Array.from({ length: END_HOUR - START_HOUR + 1 }, (_, i) => {
+                  const hour = START_HOUR + i;
+                  const top = ((i * 60) / ((END_HOUR - START_HOUR) * 60)) * 100;
+                  const hour12 = hour === 12 ? 12 : hour > 12 ? hour - 12 : hour;
+                  const ampm = hour >= 12 ? "pm" : "am";
+                  return (
+                    <div
+                      key={`hour-label-${hour}`}
+                      className="absolute right-0 text-xs text-slate-500 -translate-y-1/2 pr-1"
+                      style={{ top: `${top}%` }}
+                    >
+                      {hour12}{ampm}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Day columns */}
+            <div className="grid grid-cols-7 gap-4 flex-1">
             {days.map((day) => (
               <div key={`day-${day}`}>
                 <div className="text-xs text-center text-slate-600 font-medium mb-2">
@@ -450,20 +558,39 @@ export default function Step4Logistics() {
                     });
                   })()}
                 </div>
-
-                <div className="mt-2 text-xs text-slate-500 text-center">
-                  {START_HOUR}:00 — {END_HOUR}:00
-                </div>
               </div>
             ))}
+            </div>
+          </div>
+          </div>
+
+          {/* Sidebar - Selected availabilities summary */}
+          <div className="flex-shrink-0 w-56">
+            <div className="text-xs text-slate-600 font-medium mb-2">
+              Your selections
+            </div>
+            <div className="border border-slate-200 rounded-md bg-slate-50 p-3 min-h-[288px]">
+              {state.availability.length === 0 ? (
+                <p className="text-xs text-slate-400 italic">
+                  Click and drag on the calendar to select your available times
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {groupAvailabilityByDay(state.availability).map(({ day, ranges }) => (
+                    <div key={`summary-${day}`}>
+                      <div className="text-sm font-medium text-slate-700">
+                        {FULL_DAY_NAMES[day]}
+                      </div>
+                      <div className="text-xs text-slate-600 mt-0.5">
+                        {ranges.join(", ")}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
-        {state.availability.length > 0 && (
-          <p className="mt-3 text-sm text-slate-500">
-            {state.availability.length} time window
-            {state.availability.length !== 1 ? "s" : ""} selected
-          </p>
-        )}
       </div>
     </div>
   );

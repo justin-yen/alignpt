@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useIntake } from "@/context/IntakeContext";
@@ -24,15 +25,20 @@ const stepTitles = [
 
 export default function IntakePage() {
   const [currentStep, setCurrentStep] = useState(1);
-  const { isStepValid, getPatientInput } = useIntake();
+  const { isStepValid, getPatientInput, saveToDatabase } = useIntake();
   const router = useRouter();
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep < TOTAL_STEPS) {
       setCurrentStep(currentStep + 1);
     } else {
       const patientInput = getPatientInput();
       if (patientInput) {
+        // Save to database (fire and forget - don't block navigation on failure)
+        saveToDatabase().catch((err) => {
+          console.error("Failed to save intake data:", err);
+        });
+
         // Store in sessionStorage for the results page
         sessionStorage.setItem("patientInput", JSON.stringify(patientInput));
         router.push("/results");
@@ -68,7 +74,7 @@ export default function IntakePage() {
     <main className="min-h-screen py-8 px-4">
       <div className={`mx-auto ${isPreferencesStep ? "max-w-4xl" : "max-w-2xl"}`}>
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-4">
           <Link
             href="/"
             className="inline-flex items-center text-sm text-slate-600 hover:text-slate-900 mb-4"
@@ -76,7 +82,13 @@ export default function IntakePage() {
             <ChevronLeft className="w-4 h-4 mr-1" />
             Back to Home
           </Link>
-          <h1 className="text-2xl font-bold text-slate-900">AlignPT</h1>
+          <Image
+              src="/align_pt_transparent.png"
+              alt="AlignPT"
+              width={300}
+              height={100}
+              className="h-10 w-auto"
+            />
         </div>
 
         {/* Progress */}

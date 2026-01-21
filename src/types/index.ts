@@ -66,6 +66,8 @@ export type Insurance = "aetna" | "bcbs" | "united" | "self-pay";
 
 export type DayOfWeek = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
 
+export type TimeOfDay = "am" | "pm" | "eve";
+
 export interface TimeWindow {
   day: DayOfWeek;
   time: string;

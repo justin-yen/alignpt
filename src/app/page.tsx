@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
 export default function Home() {
@@ -23,16 +24,18 @@ export default function Home() {
       </div>
 
       <div className="relative z-10 max-w-2xl text-center">
-        <div className="mb-10">
-          <h1 className="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
-            AlignPT
-          </h1>
-          <p className="mt-3 text-lg text-primary font-medium">
-            Find Your Perfect Physical Therapist Match
-          </p>
+        <div className="mb-1">
+          <Image
+            src="/align_pt_transparent.png"
+            alt="AlignPT - Find Your Perfect PT Match"
+            width={800}
+            height={400}
+            className="mx-auto"
+            priority
+          />
         </div>
 
-        <p className="text-lg text-muted-foreground mb-10 leading-relaxed max-w-xl mx-auto">
+        <p className="text-lg text-muted-foreground mb-10 leading-relaxed max-w-xl mx-auto -mt-8">
           If PT hasn&apos;t worked for you before, it&apos;s often because you had the wrong match. We connect you with physical therapists experienced in your specific injury and treatment style.
         </p>
 

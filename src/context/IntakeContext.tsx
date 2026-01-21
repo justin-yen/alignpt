@@ -13,6 +13,8 @@ import {
   TimeWindow,
   PatientInput,
 } from "@/types";
+import { insertIntakeSubmission, getSessionId } from "@/lib/supabase";
+import type { IntakeSubmissionInsert } from "@/types/database";
 
 interface IntakeState {
   injuryArea: InjuryArea | null;
@@ -42,6 +44,7 @@ interface IntakeContextType {
   getPatientInput: () => PatientInput | null;
   isStepValid: (step: number) => boolean;
   resetState: () => void;
+  saveToDatabase: () => Promise<{ success: boolean; error?: string }>;
 }
 
 const initialState: IntakeState = {
@@ -189,6 +192,43 @@ export function IntakeProvider({ children }: { children: ReactNode }) {
     setState(initialState);
   };
 
+  const saveToDatabase = async (): Promise<{
+    success: boolean;
+    error?: string;
+  }> => {
+    const patientInput = getPatientInput();
+    if (!patientInput) {
+      return { success: false, error: "Incomplete intake data" };
+    }
+
+    const submission: IntakeSubmissionInsert = {
+      session_id: getSessionId(),
+      injury_area: patientInput.injuryArea,
+      injury_side: patientInput.injurySide,
+      injury_region: patientInput.injuryRegion,
+      injury_context: patientInput.injuryContext || null,
+      goal: patientInput.goal,
+      style_communication_pref: patientInput.stylePreferences.communicationStyle,
+      style_motivation_pref: patientInput.stylePreferences.motivationLevel,
+      style_empathy_pref: patientInput.stylePreferences.empathyLevel,
+      style_treatment_pref: patientInput.stylePreferences.treatmentApproach,
+      location: patientInput.location,
+      visit_types: patientInput.visitTypes,
+      insurance: patientInput.insurance,
+      availability: patientInput.availability,
+      user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null,
+    };
+
+    const result = await insertIntakeSubmission(submission);
+
+    if (!result.success) {
+      console.error("Failed to save intake submission:", result.error);
+    }
+    console.log('successfully saved intake submission');
+
+    return result;
+  };
+
   return (
     <IntakeContext.Provider
       value={{
@@ -206,6 +246,7 @@ export function IntakeProvider({ children }: { children: ReactNode }) {
         getPatientInput,
         isStepValid,
         resetState,
+        saveToDatabase,
       }}
     >
       {children}
