@@ -2,6 +2,23 @@
 
 Future development roadmap for AlignPT.
 
+## Completed: Database Integration
+
+- [x] Add Supabase client configuration (`src/lib/supabase.ts`)
+- [x] Define database types matching PostgreSQL schema (`src/types/database.ts`)
+- [x] Add `saveToDatabase()` method to IntakeContext
+- [x] Integrate database save on intake form submission
+- [x] Add session ID tracking for anonymous users
+- [x] Graceful fallback when Supabase is not configured
+
+## TODO: Database - Next Steps
+
+- [ ] Set up Supabase project and configure environment variables
+- [ ] Create PostgreSQL tables and enums matching `src/types/database.ts`
+- [ ] Add error handling UI for failed database saves
+- [ ] Implement PT profiles table and CRUD operations
+- [ ] Add analytics dashboard for intake submissions
+
 ## TODO: License Verification
 
 - [ ] Verify PT license numbers against state licensing board APIs

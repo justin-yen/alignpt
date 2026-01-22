@@ -28,14 +28,14 @@ export default function Home() {
           <Image
             src="/align_pt_transparent.png"
             alt="AlignPT - Find Your Perfect PT Match"
-            width={800}
-            height={400}
+            width={500}
+            height={250}
             className="mx-auto"
             priority
           />
         </div>
 
-        <p className="text-lg text-muted-foreground mb-10 leading-relaxed max-w-xl mx-auto -mt-8">
+        <p className="text-lg text-muted-foreground mb-10 leading-relaxed max-w-xl mx-auto">
           If PT hasn&apos;t worked for you before, it&apos;s often because you had the wrong match. We connect you with physical therapists experienced in your specific injury and treatment style.
         </p>
 

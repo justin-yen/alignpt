@@ -12,7 +12,7 @@ import Step2Goal from "@/components/intake/Step2Goal";
 import Step3Preferences from "@/components/intake/Step3Preferences";
 import Step4Logistics from "@/components/intake/Step4Logistics";
 import PreferencesSidebar from "@/components/intake/PreferencesSidebar";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, House } from "lucide-react";
 
 const TOTAL_STEPS = 4;
 
@@ -71,17 +71,19 @@ export default function IntakePage() {
   const isPreferencesStep = currentStep === 3;
 
   return (
-    <main className="min-h-screen py-8 px-4">
+    <main className="min-h-screen py-8 px-4 relative">
+      {/* Back to Home - positioned absolutely on the left */}
+      <Link
+        href="/"
+        className="absolute left-4 top-8 inline-flex items-center text-sm text-slate-600 hover:text-slate-900"
+      >
+        <House className="w-4 h-4 mr-1" />
+        Home
+      </Link>
+
       <div className={`mx-auto ${isPreferencesStep ? "max-w-4xl" : "max-w-2xl"}`}>
         {/* Header */}
         <div className="mb-4">
-          <Link
-            href="/"
-            className="inline-flex items-center text-sm text-slate-600 hover:text-slate-900 mb-4"
-          >
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            Back to Home
-          </Link>
           <Image
               src="/align_pt_transparent.png"
               alt="AlignPT"
